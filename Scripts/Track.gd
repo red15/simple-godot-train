@@ -11,6 +11,8 @@ signal bogie_at_tail(bogie: Bogie, extra: float, is_forward: bool)
 @onready var tail_point : PathFollow2D = $TailPoint
 @onready var curve_points : PackedVector2Array = []
 
+var block : TrackBlock
+
 func _ready() -> void:
 	_update_points()
 	set_process(Engine.is_editor_hint())
@@ -24,6 +26,13 @@ func _process(_delta: float) -> void:
 #
 # This links both tracks to each other, so only call it once per connection
 func link_track(other_track, from_side: String, to_side: String) -> void:
+	if other_track is Track:
+		if self.block == null:
+			self.block = TrackBlock.new()
+			self.block.start(self)
+		if other_track.block == null:
+			self.block.add_track(other_track)
+
 	connect("bogie_at_" + from_side, Callable(other_track, "enter_from_" + to_side))
 	other_track.connect("bogie_at_" + to_side, Callable(self, "enter_from_" + from_side))
 
